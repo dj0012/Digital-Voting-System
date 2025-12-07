@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote - Voting Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+        }
+        
+        .candidates-list {
+            margin: 30px 0;
+        }
+        
+        .candidate-option {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .candidate-option:hover {
+            background: #ecf0f1;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .candidate-option input[type="radio"] {
+            margin-right: 15px;
+        }
+        
+        .candidate-option label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        
+        .candidate-info {
+            margin-left: 30px;
+        }
+        
+        .party-name {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .candidate-name {
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-vote {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-vote:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+        
+        .btn-back {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .btn-back:hover {
+            background: #bdc3c7;
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗳️ Cast Your Vote</h1>
+        </div>
+        
+        {% if already_voted %}
+            <div class="message warning" style="display: block;">
+                <strong>Already Voted</strong><br>
+                You have already cast your vote. Thank you for participating in the election!
+            </div>
+        {% else %}
+            <form id="voteForm">
+                <div class="candidates-list" id="candidatesList">
+                    <!-- Candidates will be loaded here -->
+                </div>
+                
+                <div class="loading" id="loading">
+                    <p>Casting your vote...</p>
+                </div>
+                
+                <div class="message" id="message"></div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-vote">Cast Vote</button>
+                    <a href="/dashboard" class="btn-back" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">Back</a>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+    
+    <script>
+        {% if not already_voted %}
+        // Load candidates
+        async function loadCandidates() {
+            try {
+                const response = await fetch('/api/candidates');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const candidatesList = document.getElementById('candidatesList');
+                    candidatesList.innerHTML = '';
+                    
+                    data.candidates.forEach(candidate => {
+                        const div = document.createElement('div');
+                        div.className = 'candidate-option';
+                        div.innerHTML = `
+                            <label>
+                                <input type="radio" name="candidate" value="${candidate.candidate_id}|${candidate.party_id}" required>
+                                <div class="candidate-info">
+                                    <div class="party-name">${candidate.party_name}</div>
+                                    <div class="candidate-name">${candidate.candidate_name}</div>
+                                </div>
+                            </label>
+                        `;
+                        candidatesList.appendChild(div);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading candidates:', error);
+            }
+        }
+        
+        // Load candidates on page load
+        loadCandidates();
+        
+        // Form submission
+        document.getElementById('voteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const selectedRadio = document.querySelector('input[name="candidate"]:checked');
+            if (!selectedRadio) {
+                const messageDiv = document.getElementById('message');
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Please select a candidate';
+                return;
+            }
+            
+            const [candidate_id, party_id] = selectedRadio.value.split('|');
+            
+            const messageDiv = document.getElementById('message');
+            const loading = document.getElementById('loading');
+            
+            messageDiv.style.display = 'none';
+            loading.style.display = 'block';
+            
+            const data = {
+                candidate_id: parseInt(candidate_id),
+                party_id: parseInt(party_id)
+            };
+            
+            try {
+                const response = await fetch('/vote', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                loading.style.display = 'none';
+                messageDiv.style.display = 'block';
+                
+                if (result.success) {
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = result.message;
+                    setTimeout(() => window.location.href = '/dashboard', 2000);
+                } else {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = result.message;
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Voting failed: ' + error.message;
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

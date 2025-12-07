@@ -6,7 +6,7 @@ import datetime
 
 class voting_system:
     def __init__(self):
-        self.db=connector.connect(host='127.0.0.1',port = 3306,user='root',password='*******', database='voting_system')
+        self.db=connector.connect(host='127.0.0.1',port=3306,user='root',password='root123', database='voting_system')
         
     def sign_up(self):
         while True:
