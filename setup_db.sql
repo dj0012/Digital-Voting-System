@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS candidate_table(
 CREATE TABLE IF NOT EXISTS user_table(
   VoterId varchar(10) not null,
   Aadhaar char(15) not null unique,
-  _Password varchar(50) not null,
+  _Password varchar(255) not null,
+  IsActive BOOLEAN DEFAULT TRUE,
   PRIMARY KEY (VoterId),
   FOREIGN KEY (Aadhaar) references voter_table(Aadhaar));
 
@@ -82,16 +83,17 @@ CREATE TABLE IF NOT EXISTS result(
 SET FOREIGN_KEY_CHECKS=1;
 
 -- Create trigger for vote counting
+DROP TRIGGER IF EXISTS Vote_counting;
 DELIMITER //
-CREATE TRIGGER IF NOT EXISTS Vote_counting
+CREATE TRIGGER Vote_counting
 AFTER INSERT ON vote_table
 FOR EACH ROW
 BEGIN 
-  IF NOT EXISTS (SELECT CandidateId FROM result WHERE result.CandidateId=NEW.CandidateId)
+  IF NOT EXISTS (SELECT CandidateId FROM result WHERE result.CandidateId = NEW.CandidateId)
   THEN
-    INSERT INTO result(CandidateId,PartyId,DistrictId,Vote_Count) VALUES(NEW.CandidateId,NEW.PartyId,NEW.DistrictId,1);
+    INSERT INTO result(CandidateId, PartyId, DistrictId, Vote_Count) VALUES(NEW.CandidateId, NEW.PartyId, NEW.DistrictId, 1);
   ELSE
-    UPDATE result SET result.Vote_Count=result.Vote_Count+1 WHERE result.CandidateId=NEW.CandidateId;
+    UPDATE result SET Vote_Count = Vote_Count + 1 WHERE CandidateId = NEW.CandidateId;
   END IF; 
 END //
 DELIMITER ;

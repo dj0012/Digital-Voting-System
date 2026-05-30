@@ -3,187 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Voting Platform</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 500px;
-            width: 100%;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            color: #7f8c8d;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            color: #2c3e50;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ecf0f1;
-            border-radius: 5px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-        }
-        
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-login {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-        
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
-        }
-        
-        .btn-back {
-            background: #ecf0f1;
-            color: #2c3e50;
-        }
-        
-        .btn-back:hover {
-            background: #bdc3c7;
-        }
-        
-        .message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            display: none;
-        }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-    </style>
+    <title>Login - Secure Digital Voting Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📝 Login</h1>
-            <p>Cast your vote securely</p>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="glass-container" style="max-width: 450px;">
+        <div class="header-section">
+            <div class="icon-wrapper">
+                <span class="icon">📝</span>
+            </div>
+            <h1>Voter Dashboard Login</h1>
+            <p>Access your secure voting profile to cast your vote</p>
         </div>
         
         <form id="loginForm">
             <div class="form-group">
-                <label>Voter ID</label>
-                <input type="text" id="voter_id" placeholder="Enter your Voter ID" required>
+                <label for="aadhaar">Aadhaar Number</label>
+                <div class="input-icon-wrapper">
+                    <input type="text" id="aadhaar" placeholder="1234 5678 9012" maxlength="14" autocomplete="off" required>
+                    <span class="field-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                            <line x1="7" y1="8" x2="17" y2="8"></line>
+                            <line x1="7" y1="12" x2="17" y2="12"></line>
+                            <line x1="7" y1="16" x2="13" y2="16"></line>
+                        </svg>
+                    </span>
+                </div>
             </div>
             
             <div class="form-group">
-                <label>Aadhaar Number</label>
-                <input type="text" id="aadhaar" placeholder="Enter your Aadhaar Number" required>
+                <label for="password">Password</label>
+                <div class="input-icon-wrapper">
+                    <input type="password" id="password" placeholder="••••••••••••" required>
+                    <span class="field-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </span>
+                    <span class="toggle-password" id="togglePasswordBtn">
+                        <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </span>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
-            </div>
-            
-            <div class="loading" id="loading">
-                <p>Logging in...</p>
-            </div>
-            
-            <div class="message" id="message"></div>
-            
-            <div class="button-group">
-                <button type="submit" class="btn-login">Login</button>
-                <a href="/menu" class="btn-back" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">Back</a>
+            <div class="button-row">
+                <button type="submit" class="btn btn-indigo">
+                    Sign In
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 8px;">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <a href="/menu" class="btn btn-muted">Cancel</a>
             </div>
         </form>
         
-        <p style="text-align: center; margin-top: 20px; color: #7f8c8d;">
-            Don't have an account? <a href="/signup" style="color: #667eea; text-decoration: none; font-weight: bold;">Sign up here</a>
+        <p style="text-align: center; margin-top: 25px; color: var(--text-muted); font-size: 14px;">
+            New to the system? <a href="/signup" style="color: var(--accent-indigo); text-decoration: none; font-weight: 600; transition: var(--transition-smooth); border-bottom: 1px dashed var(--accent-indigo); padding-bottom: 2px;">Create an account</a>
         </p>
     </div>
     
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
+        // Password visibility toggle
+        const passwordInput = document.getElementById('password');
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+        const eyeIcon = document.getElementById('eyeIcon');
+        
+        toggleBtn.addEventListener('click', () => {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            
+            if (isPassword) {
+                // Change eye to eye-off SVG icon
+                eyeIcon.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                `;
+            } else {
+                // Change back to regular eye SVG icon
+                eyeIcon.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                `;
+            }
+        });
+
+        // Aadhaar auto-formatter (adds space every 4 digits)
+        const aadhaarInput = document.getElementById('aadhaar');
+        aadhaarInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let formatted = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) {
+                    formatted += ' ';
+                }
+                formatted += value[i];
+            }
+            e.target.value = formatted;
+        });
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const messageDiv = document.getElementById('message');
-            const loading = document.getElementById('loading');
+            showLoader('Authenticating details...');
             
-            messageDiv.style.display = 'none';
-            loading.style.display = 'block';
+            // Strip out spaces for raw 12-digit Aadhaar to the backend
+            const rawAadhaar = aadhaarInput.value.replace(/\s+/g, '');
             
             const data = {
-                voter_id: document.getElementById('voter_id').value,
-                aadhaar: document.getElementById('aadhaar').value,
-                password: document.getElementById('password').value
+                aadhaar: rawAadhaar,
+                password: passwordInput.value
             };
             
             try {
@@ -196,22 +133,17 @@
                 });
                 
                 const result = await response.json();
-                loading.style.display = 'none';
-                messageDiv.style.display = 'block';
+                hideLoader();
                 
                 if (result.success) {
-                    messageDiv.className = 'message success';
-                    messageDiv.textContent = result.message;
+                    showToast(result.message, 'success');
                     setTimeout(() => window.location.href = '/dashboard', 1500);
                 } else {
-                    messageDiv.className = 'message error';
-                    messageDiv.textContent = result.message;
+                    showToast(result.message || 'Login failed!', 'error');
                 }
             } catch (error) {
-                loading.style.display = 'none';
-                messageDiv.style.display = 'block';
-                messageDiv.className = 'message error';
-                messageDiv.textContent = 'Login failed: ' + error.message;
+                hideLoader();
+                showToast('Login error: ' + error.message, 'error');
             }
         });
     </script>

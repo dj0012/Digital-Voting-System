@@ -3,161 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Voting Platform</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 20px;
-        }
-        
-        .header h1 {
-            color: #2c3e50;
-        }
-        
-        .logout-btn {
-            background: #e74c3c;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
-        
-        .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        .menu-card {
-            padding: 30px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 150px;
-        }
-        
-        .menu-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-        
-        .card-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
-        }
-        
-        .card-title {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .card-vote {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .card-profile {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        
-        .card-results {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        }
-        
-        .card-logout {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-        
-        .info {
-            background: #ecf0f1;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-        
-        @media (max-width: 600px) {
-            .menu-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
+    <title>Voter Dashboard - Secure Digital Voting Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Welcome to Your Dashboard</h1>
-            <a href="/logout" class="logout-btn">Logout</a>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="glass-container" style="max-width: 960px;">
+        <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 24px; margin-bottom: 35px;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                    <h1 style="font-size: 26px; margin: 0;">Voter Dashboard</h1>
+                    <span style="background: rgba(45, 212, 191, 0.1); border: 1px solid var(--accent-teal); color: var(--accent-teal); font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 10px; border-radius: 12px; letter-spacing: 0.8px; box-shadow: 0 0 10px rgba(45, 212, 191, 0.2);">Secure Session</span>
+                </div>
+                <p style="margin: 0; font-size: 14.5px; color: var(--text-muted); font-weight: 500;">Authenticated Aadhaar: <span style="color: var(--text-white); font-weight: 700; letter-spacing: 0.5px;">{{ aadhaar }}</span></p>
+            </div>
+            
+            <a href="/logout" class="btn btn-muted" style="flex: none; padding: 10px 20px; font-size: 13.5px; border-color: rgba(244, 63, 94, 0.2); color: #fda4af; transition: var(--transition-smooth);" onmouseover="this.style.background='rgba(244, 63, 94, 0.08)'; this.style.borderColor='var(--accent-rose)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.04)'; this.style.borderColor='rgba(255, 255, 255, 0.08)';">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Sign Out
+            </a>
         </div>
         
-        <div class="info">
-            <p><strong>Aadhaar:</strong> {{ aadhaar }}</p>
-        </div>
-        
-        <div class="menu-grid">
-            <a href="/vote" class="menu-card card-vote">
-                <div class="card-icon">🗳️</div>
-                <div class="card-title">Cast Your Vote</div>
+        <div class="btn-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+            <!-- CARD 1: CAST YOUR VOTE -->
+            <a href="/vote" class="btn-card" style="border-color: rgba(45, 212, 191, 0.15); position: relative; overflow: hidden; padding: 35px 25px;">
+                <div class="emoji-wrapper" style="width: 64px; height: 64px; border-radius: 16px; background: rgba(45, 212, 191, 0.04); border: 1px solid rgba(45, 212, 191, 0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; transition: var(--transition-smooth);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
+                </div>
+                <span class="btn-title" style="color: var(--text-white); font-size: 19px; font-weight: 700; margin-bottom: 8px;">Cast Your Vote</span>
+                <span style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5;">Choose a verified candidate and commit your ballot to the digital registry.</span>
+                
+                <div style="margin-top: 25px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--accent-teal); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Enter Booth 
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
             </a>
             
-            <a href="/profile" class="menu-card card-profile">
-                <div class="card-icon">👤</div>
-                <div class="card-title">Update Profile</div>
+            <!-- CARD 2: UPDATE PROFILE -->
+            <a href="/profile" class="btn-card" style="border-color: rgba(129, 140, 248, 0.15); position: relative; overflow: hidden; padding: 35px 25px;">
+                <div class="emoji-wrapper" style="width: 64px; height: 64px; border-radius: 16px; background: rgba(129, 140, 248, 0.04); border: 1px solid rgba(129, 140, 248, 0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; transition: var(--transition-smooth);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <span class="btn-title" style="color: var(--text-white); font-size: 19px; font-weight: 700; margin-bottom: 8px;">Update Profile</span>
+                <span style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5;">Review or update your linked email channels, contact phone, and account security.</span>
+                
+                <div style="margin-top: 25px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--accent-indigo); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Edit Profile 
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
             </a>
             
-            <a href="/results" class="menu-card card-results">
-                <div class="card-icon">📊</div>
-                <div class="card-title">View Results</div>
-            </a>
-            
-            <a href="/logout" class="menu-card card-logout">
-                <div class="card-icon">🚪</div>
-                <div class="card-title">Logout</div>
+            <!-- CARD 3: VIEW RESULTS -->
+            <a href="/results" class="btn-card" style="border-color: rgba(244, 63, 94, 0.15); position: relative; overflow: hidden; padding: 35px 25px;">
+                <div class="emoji-wrapper" style="width: 64px; height: 64px; border-radius: 16px; background: rgba(244, 63, 94, 0.04); border: 1px solid rgba(244, 63, 94, 0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; transition: var(--transition-smooth);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-rose)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                </div>
+                <span class="btn-title" style="color: var(--text-white); font-size: 19px; font-weight: 700; margin-bottom: 8px;">View Live Results</span>
+                <span style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5;">Monitor real-time electoral results and explore analytical graphs inside your district.</span>
+                
+                <div style="margin-top: 25px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--accent-rose); text-transform: uppercase; letter-spacing: 0.5px;">
+                    Explore Stats 
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </div>
             </a>
         </div>
     </div>

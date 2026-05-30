@@ -1,31 +1,58 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
-import mysql.connector as connector
+from tkinter import ttk, messagebox
 from datetime import date
 import random
 import datetime
+from db_utils import get_db_connection, hash_password, verify_password
 
+
+# Premium Design Tokens (Glassmorphic Dark Aesthetic)
+BG_PRIMARY = '#060314'      # Obsidian
+BG_SECONDARY = '#0f0c24'    # Deep Indigo Panel
+BG_INPUT = '#17123a'        # Translucent Navy Input
+COLOR_TEXT = '#f8fafc'      # Slate White
+COLOR_MUTED = '#94a3b8'     # Muted Grey-blue
+COLOR_INDIGO = '#818cf8'    # Accent Indigo
+COLOR_INDIGO_HOVER = '#6366f1'
+COLOR_TEAL = '#2dd4bf'      # Accent Teal
+COLOR_TEAL_HOVER = '#14b8a6'
+COLOR_ROSE = '#f43f5e'      # Alert Rose
 
 class VotingSystemGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Secure Digital Voting Platform")
-        self.root.geometry("800x600")
-        self.root.configure(bg='#f0f0f0')
+        self.root.geometry("850x650")
+        self.root.configure(bg=BG_PRIMARY)
         
         # Database connection
         try:
-            self.db = connector.connect(
-                host='127.0.0.1',
-                port=3306,
-                user='root',
-                password='root123',
-                database='voting_system'
-            )
+            self.db = get_db_connection()
         except Exception as e:
             messagebox.showerror("Database Error", f"Connection failed: {str(e)}")
             self.root.destroy()
             return
+        
+        # Setup modern TTK styles
+        self.style = ttk.Style()
+        self.style.theme_use('clam')
+        self.style.configure(
+            "TScrollbar",
+            gripcount=0,
+            background=BG_INPUT,
+            troughcolor=BG_PRIMARY,
+            bordercolor=BG_PRIMARY,
+            lightcolor=BG_PRIMARY,
+            darkcolor=BG_PRIMARY
+        )
+        self.style.configure(
+            "TCombobox",
+            fieldbackground=BG_INPUT,
+            background=BG_INPUT,
+            foreground="white",
+            bordercolor="#2b2654",
+            arrowcolor=COLOR_TEAL
+        )
         
         self.current_user = None
         self.show_main_menu()
@@ -38,122 +65,170 @@ class VotingSystemGUI:
     def show_main_menu(self):
         """Display the main menu"""
         self.clear_window()
+        self.root.configure(bg=BG_PRIMARY)
         
-        # Title
-        title_frame = tk.Frame(self.root, bg='#2c3e50', height=100)
-        title_frame.pack(fill=tk.X)
+        # Title Card
+        title_frame = tk.Frame(self.root, bg=BG_SECONDARY, height=120, highlightthickness=1, highlightbackground='#17123a')
+        title_frame.pack(fill=tk.X, padx=25, pady=(25, 10))
         
         title_label = tk.Label(
             title_frame,
             text="SECURE DIGITAL VOTING PLATFORM",
-            font=("Helvetica", 20, "bold"),
-            bg='#2c3e50',
-            fg='white'
+            font=("Helvetica", 18, "bold"),
+            bg=BG_SECONDARY,
+            fg=COLOR_TEXT
         )
-        title_label.pack(pady=20)
+        title_label.pack(pady=(25, 5))
+        
+        subtitle_label = tk.Label(
+            title_frame,
+            text="State-of-the-Art Cryptographic Voting Registry",
+            font=("Helvetica", 10),
+            bg=BG_SECONDARY,
+            fg=COLOR_MUTED
+        )
+        subtitle_label.pack(pady=(0, 20))
         
         # Button frame
-        button_frame = tk.Frame(self.root, bg='#f0f0f0')
-        button_frame.pack(expand=True, fill=tk.BOTH, padx=40, pady=40)
+        button_frame = tk.Frame(self.root, bg=BG_PRIMARY)
+        button_frame.pack(expand=True, fill=tk.BOTH, padx=60, pady=25)
         
         buttons = [
-            ("🔐 SIGN UP", self.show_signup),
-            ("📝 LOGIN", self.show_login),
+            ("🔐 NEW VOTER SIGN UP", self.show_signup),
+            ("📝 ACCESS VOTER LOGIN", self.show_login),
             ("🎯 PARTY REGISTRATION", self.show_party_registration),
-            ("📊 VIEW RESULTS", self.show_results),
-            ("❌ EXIT", self.root.quit)
+            ("📊 REAL-TIME RESULTS", self.show_results),
+            ("❌ EXIT SYSTEM", self.root.quit)
         ]
         
         for text, command in buttons:
             btn = tk.Button(
                 button_frame,
                 text=text,
-                font=("Helvetica", 12, "bold"),
-                bg='#3498db',
+                font=("Helvetica", 11, "bold"),
+                bg=COLOR_INDIGO,
                 fg='white',
                 command=command,
-                height=3,
-                cursor="hand2"
+                height=2,
+                cursor="hand2",
+                relief="flat",
+                activebackground=COLOR_INDIGO_HOVER,
+                activeforeground="white"
             )
-            btn.pack(fill=tk.X, pady=10)
-            btn.bind("<Enter>", lambda e: btn.config(bg='#2980b9'))
-            btn.bind("<Leave>", lambda e: btn.config(bg='#3498db'))
+            btn.pack(fill=tk.X, pady=8)
+            btn.bind("<Enter>", lambda e, b=btn: b.config(bg=COLOR_INDIGO_HOVER))
+            btn.bind("<Leave>", lambda e, b=btn: b.config(bg=COLOR_INDIGO))
     
     def show_signup(self):
         """Display sign up form"""
         self.clear_window()
+        self.root.configure(bg=BG_PRIMARY)
         
-        # Header
+        # Header Badge
         header = tk.Label(
             self.root,
-            text="VOTER REGISTRATION",
-            font=("Helvetica", 16, "bold"),
-            bg='#27ae60',
-            fg='white'
+            text="VOTER REGISTRATION REGISTRY",
+            font=("Helvetica", 14, "bold"),
+            bg=COLOR_TEAL,
+            fg=BG_PRIMARY,
+            pady=12
         )
-        header.pack(fill=tk.X, padx=0, pady=10)
+        header.pack(fill=tk.X, padx=0, pady=0)
         
         # Main frame with scrollbar
-        main_frame = tk.Frame(self.root, bg='#f0f0f0')
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        main_frame = tk.Frame(self.root, bg=BG_PRIMARY)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(15, 10))
         
-        canvas = tk.Canvas(main_frame, bg='#f0f0f0', highlightthickness=0)
-        scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg='#f0f0f0')
+        canvas = tk.Canvas(main_frame, bg=BG_PRIMARY, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview, style="TScrollbar")
+        scrollable_frame = tk.Frame(canvas, bg=BG_PRIMARY)
         
         scrollable_frame.bind(
             "<Configure>",
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
         
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=790)
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Form fields
-        fields = {
-            "Aadhaar Number (12 digits)": "aadhaar",
-            "First Name": "fname",
-            "Middle Name": "mname",
-            "Last Name": "lname",
-            "Gender (M/F/Other)": "gender",
-            "Date of Birth (YYYY-MM-DD)": "dob",
-            "Phone Number (10 digits)": "phone",
-            "Email Address": "email",
-            "Locality": "locality",
-            "City": "city",
-            "State": "state",
-            "Zip Code": "zip",
-            "Password": "password",
-            "Confirm Password": "confirm_pass"
-        }
+        # Set Grid Weights for equal double column stretching
+        scrollable_frame.grid_columnconfigure(0, weight=1)
+        scrollable_frame.grid_columnconfigure(1, weight=1)
+        
+        # Grid Field Mapping (Two Columns)
+        fields_layout = [
+            ("Aadhaar Number (12 digits)", "aadhaar", 0, 0),
+            ("Gender (M/F/Other)", "gender", 0, 1),
+            ("First Name", "fname", 1, 0),
+            ("Middle Name (Optional)", "mname", 1, 1),
+            ("Last Name", "lname", 2, 0),
+            ("Date of Birth (YYYY-MM-DD)", "dob", 2, 1),
+            ("Phone Number (10 digits)", "phone", 3, 0),
+            ("Email Address", "email", 3, 1),
+            ("Locality", "locality", 4, 0),
+            ("City", "city", 4, 1),
+            ("State", "state", 5, 0),
+            ("Zip Code", "zip", 5, 1),
+            ("Password", "password", 6, 0),
+            ("Confirm Password", "confirm_pass", 6, 1)
+        ]
         
         entries = {}
-        for label_text, field_name in fields.items():
+        for label_text, field_name, row, col in fields_layout:
+            cell = tk.Frame(scrollable_frame, bg=BG_PRIMARY)
+            cell.grid(row=row, column=col, padx=15, pady=8, sticky="ew")
+            
             label = tk.Label(
-                scrollable_frame,
+                cell,
                 text=label_text + ":",
-                font=("Helvetica", 10),
-                bg='#f0f0f0',
-                fg='#2c3e50'
+                font=("Helvetica", 9, "bold"),
+                bg=BG_PRIMARY,
+                fg=COLOR_MUTED
             )
-            label.pack(anchor=tk.W, pady=5)
+            label.pack(anchor=tk.W, pady=(0, 4))
             
             if "Password" in label_text:
-                entry = tk.Entry(scrollable_frame, show="*", font=("Helvetica", 10))
+                entry = tk.Entry(
+                    cell, 
+                    show="*", 
+                    font=("Helvetica", 10),
+                    bg=BG_INPUT,
+                    fg="white",
+                    insertbackground="white",
+                    relief="flat",
+                    highlightthickness=1,
+                    highlightbackground="#2b2654",
+                    highlightcolor=COLOR_INDIGO
+                )
             elif "Gender" in label_text:
-                entry = ttk.Combobox(scrollable_frame, values=["M", "F", "Other"], font=("Helvetica", 10))
+                entry = ttk.Combobox(
+                    cell, 
+                    values=["M", "F", "Other"], 
+                    font=("Helvetica", 10),
+                    style="TCombobox"
+                )
             else:
-                entry = tk.Entry(scrollable_frame, font=("Helvetica", 10))
+                entry = tk.Entry(
+                    cell, 
+                    font=("Helvetica", 10),
+                    bg=BG_INPUT,
+                    fg="white",
+                    insertbackground="white",
+                    relief="flat",
+                    highlightthickness=1,
+                    highlightbackground="#2b2654",
+                    highlightcolor=COLOR_INDIGO
+                )
             
-            entry.pack(fill=tk.X, pady=5)
+            entry.pack(fill=tk.X, ipady=4)
             entries[field_name] = entry
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
         # Button frame
-        button_frame = tk.Frame(self.root, bg='#f0f0f0')
-        button_frame.pack(fill=tk.X, padx=20, pady=10)
+        button_frame = tk.Frame(self.root, bg=BG_PRIMARY)
+        button_frame.pack(fill=tk.X, padx=35, pady=(5, 15))
         
         def register():
             try:
@@ -173,10 +248,10 @@ class VotingSystemGUI:
                 
                 # Validations
                 if len(aadhaar) != 12 or not aadhaar.isnumeric():
-                    messagebox.showerror("Invalid Input", "Aadhaar must be 12 digits")
+                    messagebox.showerror("Invalid Input", "Aadhaar must be exactly 12 digits")
                     return
                 
-                if not (fname.isalpha() and mname.isalpha() and lname.isalpha()):
+                if not fname.isalpha() or not lname.isalpha() or (mname and not mname.isalpha()):
                     messagebox.showerror("Invalid Input", "Names can only contain letters")
                     return
                 
@@ -185,7 +260,7 @@ class VotingSystemGUI:
                     return
                 
                 if len(phone) != 10 or not phone.isnumeric():
-                    messagebox.showerror("Invalid Input", "Phone number must be 10 digits")
+                    messagebox.showerror("Invalid Input", "Phone number must be exactly 10 digits")
                     return
                 
                 if '@' not in email or '.' not in email:
@@ -193,7 +268,11 @@ class VotingSystemGUI:
                     return
                 
                 if password != confirm_pass:
-                    messagebox.showerror("Mismatch", "Passwords don't match")
+                    messagebox.showerror("Mismatch", "Passwords do not match")
+                    return
+                
+                if len(password) < 8:
+                    messagebox.showerror("Invalid Input", "Password must be at least 8 characters long")
                     return
                 
                 # Date validation
@@ -208,34 +287,39 @@ class VotingSystemGUI:
                     messagebox.showerror("Invalid Date", "Date format must be YYYY-MM-DD")
                     return
                 
-                # Get district ID
+                # Get district ID (parameterized)
                 cur = self.db.cursor()
-                cur.execute(f"SELECT DistrictId FROM address WHERE Locality='{locality}' AND City='{city}' AND State='{state}'")
+                cur.execute("SELECT DistrictId FROM address WHERE Locality = %s AND City = %s AND State = %s", (locality, city, state))
                 result = cur.fetchone()
                 if not result:
-                    messagebox.showerror("Invalid Address", "District not found for this address")
+                    messagebox.showerror("Invalid Address", "District not found for this address. Verify Locality, City, State matches the registry.")
+                    cur.close()
                     return
                 
                 district_id = result[0]
                 
-                # Check if already registered
-                cur.execute(f"SELECT Aadhaar FROM voter_table WHERE Aadhaar='{aadhaar}'")
+                # Check if already registered (parameterized)
+                cur.execute("SELECT Aadhaar FROM voter_table WHERE Aadhaar = %s", (aadhaar,))
                 if cur.fetchone():
-                    messagebox.showerror("Already Registered", "You are already registered!")
+                    messagebox.showerror("Already Registered", "This Aadhaar is already registered in the registry!")
+                    cur.close()
                     return
                 
-                # Insert voter
-                query = f"INSERT INTO voter_table VALUES('{aadhaar}','{fname}','{mname}','{lname}','{gender}','{dob}',{age},{phone},'{email}',{district_id})"
-                cur.execute(query)
+                # Insert voter (parameterized)
+                query = "INSERT INTO voter_table VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                cur.execute(query, (aadhaar, fname, mname, lname, gender, dob, age, int(phone), email, district_id))
                 self.db.commit()
                 
-                # Create voter ID
+                # Create voter ID and insert user record with hashed password (parameterized)
                 vid = fname[:2].upper() + lname[0].upper() + str(random.randint(1000001, 9999999))
-                query = f"INSERT INTO user_table VALUES('{vid}','{aadhaar}','{password}')"
-                cur.execute(query)
-                self.db.commit()
+                hashed_pwd = hash_password(password)
                 
-                messagebox.showinfo("Success", f"Registration completed!\nYour Voter ID: {vid}\nSave this for login!")
+                query = "INSERT INTO user_table(VoterId, Aadhaar, _Password, IsActive) VALUES(%s, %s, %s, %s)"
+                cur.execute(query, (vid, aadhaar, hashed_pwd, True))
+                self.db.commit()
+                cur.close()
+                
+                messagebox.showinfo("Success", f"Registration completed successfully!\nYour Voter ID: {vid}\nSave this code for your reference!")
                 self.show_main_menu()
             
             except Exception as e:
@@ -243,98 +327,152 @@ class VotingSystemGUI:
         
         tk.Button(
             button_frame,
-            text="Register",
+            text="Register Now",
             font=("Helvetica", 11, "bold"),
-            bg='#27ae60',
-            fg='white',
+            bg=COLOR_TEAL,
+            fg=BG_PRIMARY,
             command=register,
-            width=15
-        ).pack(side=tk.LEFT, padx=5)
+            width=20,
+            relief="flat",
+            activebackground=COLOR_TEAL_HOVER,
+            activeforeground=BG_PRIMARY
+        ).pack(side=tk.LEFT, padx=10)
         
         tk.Button(
             button_frame,
-            text="Back",
+            text="Cancel & Back",
             font=("Helvetica", 11, "bold"),
-            bg='#95a5a6',
-            fg='white',
+            bg=BG_INPUT,
+            fg=COLOR_TEXT,
             command=self.show_main_menu,
-            width=15
-        ).pack(side=tk.LEFT, padx=5)
+            width=20,
+            relief="flat",
+            activebackground="#2c3e50",
+            activeforeground="white"
+        ).pack(side=tk.LEFT, padx=10)
     
     def show_login(self):
         """Display login form"""
         self.clear_window()
+        self.root.configure(bg=BG_PRIMARY)
         
         # Header
         header = tk.Label(
             self.root,
-            text="LOGIN",
-            font=("Helvetica", 16, "bold"),
-            bg='#3498db',
-            fg='white'
+            text="VOTER DASHBOARD PORTAL",
+            font=("Helvetica", 14, "bold"),
+            bg=COLOR_INDIGO,
+            fg='white',
+            pady=12
         )
-        header.pack(fill=tk.X, padx=0, pady=10)
+        header.pack(fill=tk.X, padx=0, pady=0)
         
-        # Frame
-        frame = tk.Frame(self.root, bg='#f0f0f0')
-        frame.pack(expand=True, fill=tk.BOTH, padx=40, pady=40)
+        # Panel Frame
+        frame = tk.Frame(self.root, bg=BG_SECONDARY, highlightthickness=1, highlightbackground='#17123a')
+        frame.pack(expand=True, fill=tk.BOTH, padx=80, pady=50)
         
         # Login fields
-        tk.Label(frame, text="Voter ID:", font=("Helvetica", 11), bg='#f0f0f0').pack(anchor=tk.W, pady=10)
-        voter_id = tk.Entry(frame, font=("Helvetica", 11))
-        voter_id.pack(fill=tk.X, pady=5)
+        tk.Label(
+            frame, 
+            text="Aadhaar Number (12 digits):", 
+            font=("Helvetica", 10, "bold"), 
+            bg=BG_SECONDARY,
+            fg=COLOR_MUTED
+        ).pack(anchor=tk.W, padx=30, pady=(40, 5))
         
-        tk.Label(frame, text="Aadhaar Number:", font=("Helvetica", 11), bg='#f0f0f0').pack(anchor=tk.W, pady=10)
-        aadhaar = tk.Entry(frame, font=("Helvetica", 11))
-        aadhaar.pack(fill=tk.X, pady=5)
+        aadhaar = tk.Entry(
+            frame, 
+            font=("Helvetica", 11),
+            bg=BG_INPUT,
+            fg="white",
+            insertbackground="white",
+            relief="flat",
+            highlightthickness=1,
+            highlightbackground="#2b2654",
+            highlightcolor=COLOR_INDIGO
+        )
+        aadhaar.pack(fill=tk.X, padx=30, ipady=5)
         
-        tk.Label(frame, text="Password:", font=("Helvetica", 11), bg='#f0f0f0').pack(anchor=tk.W, pady=10)
-        password = tk.Entry(frame, show="*", font=("Helvetica", 11))
-        password.pack(fill=tk.X, pady=5)
+        tk.Label(
+            frame, 
+            text="Secure Password:", 
+            font=("Helvetica", 10, "bold"), 
+            bg=BG_SECONDARY,
+            fg=COLOR_MUTED
+        ).pack(anchor=tk.W, padx=30, pady=(20, 5))
+        
+        password = tk.Entry(
+            frame, 
+            show="*", 
+            font=("Helvetica", 11),
+            bg=BG_INPUT,
+            fg="white",
+            insertbackground="white",
+            relief="flat",
+            highlightthickness=1,
+            highlightbackground="#2b2654",
+            highlightcolor=COLOR_INDIGO
+        )
+        password.pack(fill=tk.X, padx=30, ipady=5)
         
         def login():
             try:
-                vid = voter_id.get().strip()
                 aadh = aadhaar.get().strip()
                 pwd = password.get()
                 
                 cur = self.db.cursor()
-                cur.execute(f"SELECT _Password FROM user_table WHERE VoterId='{vid}' AND Aadhaar='{aadh}'")
+                cur.execute("SELECT _Password, IsActive FROM user_table WHERE Aadhaar = %s", (aadh,))
                 result = cur.fetchone()
                 
-                if result and result[0] == pwd:
-                    self.current_user = aadh
-                    messagebox.showinfo("Success", "Login successful!")
-                    self.show_after_login()
-                else:
-                    messagebox.showerror("Failed", "Invalid credentials")
+                if result:
+                    stored_pwd, is_active = result
+                    if is_active is not None and not is_active:
+                        messagebox.showerror("Inactive Account", "Your voter record is Inactive (Marked Deceased/Inactive)")
+                        cur.close()
+                        return
+                    
+                    if verify_password(stored_pwd, pwd):
+                        self.current_user = aadh
+                        cur.close()
+                        messagebox.showinfo("Success", "Authenticated successfully! Accessing voter dashboard.")
+                        self.show_after_login()
+                        return
+                
+                cur.close()
+                messagebox.showerror("Authentication Failed", "Invalid Aadhaar or Password credentials entered")
             
             except Exception as e:
                 messagebox.showerror("Error", f"Login failed: {str(e)}")
         
         # Buttons
-        button_frame = tk.Frame(frame, bg='#f0f0f0')
-        button_frame.pack(fill=tk.X, pady=20)
+        button_frame = tk.Frame(frame, bg=BG_SECONDARY)
+        button_frame.pack(fill=tk.X, padx=30, pady=30)
         
         tk.Button(
             button_frame,
-            text="Login",
+            text="Secure Sign In",
             font=("Helvetica", 11, "bold"),
-            bg='#3498db',
+            bg=COLOR_INDIGO,
             fg='white',
             command=login,
-            width=15
-        ).pack(side=tk.LEFT, padx=5)
+            width=18,
+            relief="flat",
+            activebackground=COLOR_INDIGO_HOVER,
+            activeforeground="white"
+        ).pack(side=tk.LEFT, padx=(0, 10))
         
         tk.Button(
             button_frame,
-            text="Back",
+            text="Back to Menu",
             font=("Helvetica", 11, "bold"),
-            bg='#95a5a6',
-            fg='white',
+            bg=BG_INPUT,
+            fg=COLOR_TEXT,
             command=self.show_main_menu,
-            width=15
-        ).pack(side=tk.LEFT, padx=5)
+            width=18,
+            relief="flat",
+            activebackground="#2b2654",
+            activeforeground="white"
+        ).pack(side=tk.LEFT)
     
     def show_after_login(self):
         """Display after login options"""
@@ -395,22 +533,24 @@ class VotingSystemGUI:
         try:
             cur = self.db.cursor()
             
-            # Check if already voted
-            cur.execute(f"SELECT VoteId FROM vote_table WHERE Aadhaar='{self.current_user}'")
+            # Check if already voted (parameterized)
+            cur.execute("SELECT VoteId FROM vote_table WHERE Aadhaar = %s", (self.current_user,))
             if cur.fetchone():
+                cur.close()
                 messagebox.showinfo("Already Voted", "You have already cast your vote!")
                 self.show_after_login()
                 return
             
-            # Get district
-            cur.execute(f"SELECT DistrictId FROM voter_table WHERE Aadhaar='{self.current_user}'")
+            # Get district (parameterized)
+            cur.execute("SELECT DistrictId FROM voter_table WHERE Aadhaar = %s", (self.current_user,))
             district = cur.fetchone()[0]
             
-            # Get candidates
-            cur.execute(f"SELECT PartyName, CandidateName, PartyId, CandidateId FROM party_table JOIN candidate_table ON party_table.PartyId = candidate_table.PartyId WHERE candidate_table.DistrictId={district}")
+            # Get candidates (parameterized)
+            cur.execute("SELECT pt.PartyName, ct.CandidateName, pt.PartyId, ct.CandidateId FROM party_table pt JOIN candidate_table ct ON pt.PartyId = ct.PartyId WHERE ct.DistrictId = %s", (district,))
             candidates = cur.fetchall()
             
             if not candidates:
+                cur.close()
                 messagebox.showinfo("No Candidates", "No candidates available in your district!")
                 self.show_after_login()
                 return
@@ -437,10 +577,12 @@ class VotingSystemGUI:
                     return
                 
                 try:
-                    party_id, candidate_id, dist = selected_vote.get().split('|')
-                    query = f"INSERT INTO vote_table(Aadhaar, PartyId, CandidateId, DistrictId) VALUES('{self.current_user}', {party_id}, {candidate_id}, {dist})"
-                    cur.execute(query)
+                    p_id, c_id, dist = selected_vote.get().split('|')
+                    # Cast vote (parameterized)
+                    query = "INSERT INTO vote_table(Aadhaar, PartyId, CandidateId, DistrictId) VALUES(%s, %s, %s, %s)"
+                    cur.execute(query, (self.current_user, int(p_id), int(c_id), int(dist)))
                     self.db.commit()
+                    cur.close()
                     
                     messagebox.showinfo("Success", "Thank you for voting!")
                     self.show_after_login()
@@ -511,25 +653,39 @@ class VotingSystemGUI:
                 
                 if option == "Name":
                     parts = value.split()
-                    if len(parts) < 3:
-                        messagebox.showerror("Invalid Input", "Enter First Middle Last name")
+                    if len(parts) < 2:
+                        messagebox.showerror("Invalid Input", "Please enter at least First and Last name")
+                        cur.close()
                         return
-                    query = f"UPDATE voter_table SET FirstName='{parts[0].upper()}', MiddleName='{parts[1].upper()}', LastName='{parts[2].upper()}' WHERE Aadhaar='{self.current_user}'"
+                    if len(parts) == 2:
+                        first, middle, last = parts[0], "", parts[1]
+                    else:
+                        first, middle, last = parts[0], parts[1], " ".join(parts[2:])
+                    query = "UPDATE voter_table SET FirstName = %s, MiddleName = %s, LastName = %s WHERE Aadhaar = %s"
+                    params = (first.upper(), middle.upper(), last.upper(), self.current_user)
                 
                 elif option == "Phone":
                     if len(value) != 10 or not value.isnumeric():
                         messagebox.showerror("Invalid Input", "Phone must be 10 digits")
+                        cur.close()
                         return
-                    query = f"UPDATE voter_table SET Phone={value} WHERE Aadhaar='{self.current_user}'"
+                    query = "UPDATE voter_table SET Phone = %s WHERE Aadhaar = %s"
+                    params = (int(value), self.current_user)
                 
                 elif option == "Email":
                     if '@' not in value or '.' not in value:
                         messagebox.showerror("Invalid Input", "Invalid email format")
+                        cur.close()
                         return
-                    query = f"UPDATE voter_table SET Email='{value.lower()}' WHERE Aadhaar='{self.current_user}'"
+                    query = "UPDATE voter_table SET Email = %s WHERE Aadhaar = %s"
+                    params = (value.lower(), self.current_user)
+                else:
+                    cur.close()
+                    return
                 
-                cur.execute(query)
+                cur.execute(query, params)
                 self.db.commit()
+                cur.close()
                 messagebox.showinfo("Success", f"{option} updated successfully!")
                 self.show_after_login()
             
@@ -577,8 +733,9 @@ class VotingSystemGUI:
         
         try:
             cur = self.db.cursor()
-            cur.execute("SELECT party_table.PartyId, party_table.PartyName, COALESCE(SUM(result.Vote_Count), 0) as Total FROM party_table LEFT JOIN result ON party_table.PartyId = result.PartyId GROUP BY party_table.PartyId, party_table.PartyName ORDER BY Total DESC")
+            cur.execute("SELECT pt.PartyId, pt.PartyName, COALESCE(SUM(r.Vote_Count), 0) as Total FROM party_table pt LEFT JOIN result r ON pt.PartyId = r.PartyId GROUP BY pt.PartyId, pt.PartyName ORDER BY Total DESC")
             results = cur.fetchall()
+            cur.close()
             
             if not results:
                 tk.Label(frame, text="No voting data available yet", font=("Helvetica", 12), bg='#f0f0f0').pack(pady=20)
@@ -664,8 +821,12 @@ class VotingSystemGUI:
                     return
                 
                 cur = self.db.cursor()
-                cur.execute(f"INSERT INTO party_table(PartyName, Symbol, PartyLeader, LeaderAadhaar) VALUES('{pname}', '{psymbol}', '{pleader}', '{paadhaar}')")
+                cur.execute(
+                    "INSERT INTO party_table(PartyName, Symbol, PartyLeader, LeaderAadhaar) VALUES(%s, %s, %s, %s)",
+                    (pname, psymbol, pleader, paadhaar)
+                )
                 self.db.commit()
+                cur.close()
                 
                 messagebox.showinfo("Success", "Party registered successfully!")
                 self.show_main_menu()

@@ -3,240 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vote - Voting Platform</title>
+    <title>Cast Your Vote - Secure Digital Voting Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .vote-card .candidate-avatar svg {
+            color: var(--accent-indigo);
+            transition: var(--transition-smooth);
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 20px;
-        }
-        
-        .header h1 {
-            color: #2c3e50;
-        }
-        
-        .candidates-list {
-            margin: 30px 0;
-        }
-        
-        .candidate-option {
-            background: #f8f9fa;
-            padding: 20px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .candidate-option:hover {
-            background: #ecf0f1;
-            border-color: #667eea;
-            transform: translateX(5px);
-        }
-        
-        .candidate-option input[type="radio"] {
-            margin-right: 15px;
-        }
-        
-        .candidate-option label {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            margin: 0;
-        }
-        
-        .candidate-info {
-            margin-left: 30px;
-        }
-        
-        .party-name {
-            color: #667eea;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .candidate-name {
-            color: #2c3e50;
-            font-size: 16px;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-        }
-        
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-vote {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-        
-        .btn-vote:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
-        }
-        
-        .btn-back {
-            background: #ecf0f1;
-            color: #2c3e50;
-        }
-        
-        .btn-back:hover {
-            background: #bdc3c7;
-        }
-        
-        .message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            display: none;
-        }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
+        .vote-card.selected-card .candidate-avatar svg {
+            color: var(--accent-teal);
+            filter: drop-shadow(0 0 6px rgba(45, 212, 191, 0.4));
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🗳️ Cast Your Vote</h1>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="glass-container" style="max-width: 650px;">
+        <div class="header-section">
+            <div class="icon-wrapper" style="display: inline-flex; align-items: center; justify-content: center;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-indigo); filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.4));">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M12 2v9"></path>
+                    <path d="M8 5h8"></path>
+                </svg>
+            </div>
+            <h1>Cast Your Vote</h1>
+            <p>Select your candidate and submit securely. You can only vote once.</p>
         </div>
         
         {% if already_voted %}
-            <div class="message warning" style="display: block;">
-                <strong>Already Voted</strong><br>
-                You have already cast your vote. Thank you for participating in the election!
+            <div style="background: rgba(20, 184, 166, 0.05); border: 1px solid var(--accent-teal); border-radius: var(--border-radius-md); padding: 35px 25px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(45, 212, 191, 0.08); border: 1px solid rgba(45, 212, 191, 0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(45, 212, 191, 0.1);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-teal);">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h3 style="color: var(--accent-teal); margin-bottom: 8px; font-size: 18px;">Vote Already Recorded</h3>
+                <p style="color: var(--text-white); opacity: 0.85; max-width: 400px; font-size: 13.5px;">You have successfully cast your ballot for this election. Thank you for voting!</p>
+                <div style="margin-top: 24px; width: 100%; display: flex; justify-content: center;">
+                    <a href="/dashboard" class="btn btn-indigo" style="max-width: 220px; width: 100%; display: inline-flex; align-items: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        Dashboard
+                    </a>
+                </div>
             </div>
         {% else %}
             <form id="voteForm">
-                <div class="candidates-list" id="candidatesList">
-                    <!-- Candidates will be loaded here -->
+                <div class="vote-options" id="candidatesList">
+                    <!-- Candidates will be loaded asynchronously -->
                 </div>
                 
-                <div class="loading" id="loading">
-                    <p>Casting your vote...</p>
-                </div>
-                
-                <div class="message" id="message"></div>
-                
-                <div class="button-group">
-                    <button type="submit" class="btn-vote">Cast Vote</button>
-                    <a href="/dashboard" class="btn-back" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">Back</a>
+                <div class="button-row" style="margin-top: 35px;">
+                    <button type="submit" class="btn btn-indigo" style="display: inline-flex; align-items: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Submit Ballot
+                    </button>
+                    <a href="/dashboard" class="btn btn-muted" style="display: inline-flex; align-items: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Back
+                    </a>
                 </div>
             </form>
         {% endif %}
     </div>
     
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
         {% if not already_voted %}
-        // Load candidates
+        // Load candidates asynchronously
         async function loadCandidates() {
+            showLoader('Loading candidates in your district...');
             try {
                 const response = await fetch('/api/candidates');
                 const data = await response.json();
+                hideLoader();
                 
                 if (data.success) {
                     const candidatesList = document.getElementById('candidatesList');
                     candidatesList.innerHTML = '';
                     
-                    data.candidates.forEach(candidate => {
-                        const div = document.createElement('div');
-                        div.className = 'candidate-option';
-                        div.innerHTML = `
-                            <label>
-                                <input type="radio" name="candidate" value="${candidate.candidate_id}|${candidate.party_id}" required>
-                                <div class="candidate-info">
-                                    <div class="party-name">${candidate.party_name}</div>
-                                    <div class="candidate-name">${candidate.candidate_name}</div>
-                                </div>
-                            </label>
+                    if (data.candidates.length === 0) {
+                        candidatesList.innerHTML = `
+                            <p style="text-align: center; padding: 20px; color: var(--text-muted);">
+                                No candidates are currently registered in your district.
+                            </p>
                         `;
-                        candidatesList.appendChild(div);
+                        return;
+                    }
+                    
+                    data.candidates.forEach(candidate => {
+                        const card = document.createElement('div');
+                        card.className = 'vote-card';
+                        
+                        const partyClass = candidate.party_name.toLowerCase();
+                        
+                        card.innerHTML = `
+                            <input type="radio" name="candidate" id="cand_${candidate.candidate_id}" value="${candidate.candidate_id}|${candidate.party_id}" required>
+                            <div class="vote-card-content">
+                                <div class="candidate-avatar" style="display: inline-flex; align-items: center; justify-content: center;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                                <div class="candidate-info">
+                                    <div class="candidate-name-badge">
+                                        <span class="cand-name">${candidate.candidate_name}</span>
+                                        <span class="party-badge badge-${partyClass}">${candidate.party_name}</span>
+                                    </div>
+                                    <p class="district-badge">District Registry Candidate</p>
+                                </div>
+                                <div class="custom-radio-indicator">
+                                    <div class="radio-inner"></div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Select on card click helper
+                        card.addEventListener('click', () => {
+                            const input = card.querySelector('input');
+                            input.checked = true;
+                            
+                            // Remove selected class from all sibling cards
+                            document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected-card'));
+                            // Add selected class to this card
+                            card.classList.add('selected-card');
+                        });
+                        
+                        candidatesList.appendChild(card);
                     });
+                } else {
+                    showToast('Failed to retrieve candidates: ' + data.message, 'error');
                 }
             } catch (error) {
-                console.error('Error loading candidates:', error);
+                hideLoader();
+                showToast('Error loading candidates: ' + error.message, 'error');
             }
         }
         
-        // Load candidates on page load
         loadCandidates();
         
-        // Form submission
+        // Handle Vote form submission
         document.getElementById('voteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const selectedRadio = document.querySelector('input[name="candidate"]:checked');
             if (!selectedRadio) {
-                const messageDiv = document.getElementById('message');
-                messageDiv.style.display = 'block';
-                messageDiv.className = 'message error';
-                messageDiv.textContent = 'Please select a candidate';
+                showToast('Please select a candidate to vote!', 'error');
                 return;
             }
             
             const [candidate_id, party_id] = selectedRadio.value.split('|');
             
-            const messageDiv = document.getElementById('message');
-            const loading = document.getElementById('loading');
-            
-            messageDiv.style.display = 'none';
-            loading.style.display = 'block';
+            showLoader('Securing vote and committing record...');
             
             const data = {
                 candidate_id: parseInt(candidate_id),
@@ -253,22 +181,17 @@
                 });
                 
                 const result = await response.json();
-                loading.style.display = 'none';
-                messageDiv.style.display = 'block';
+                hideLoader();
                 
                 if (result.success) {
-                    messageDiv.className = 'message success';
-                    messageDiv.textContent = result.message;
-                    setTimeout(() => window.location.href = '/dashboard', 2000);
+                    showToast(result.message, 'success');
+                    setTimeout(() => window.location.href = '/dashboard', 2500);
                 } else {
-                    messageDiv.className = 'message error';
-                    messageDiv.textContent = result.message;
+                    showToast(result.message || 'Voting failed!', 'error');
                 }
             } catch (error) {
-                loading.style.display = 'none';
-                messageDiv.style.display = 'block';
-                messageDiv.className = 'message error';
-                messageDiv.textContent = 'Voting failed: ' + error.message;
+                hideLoader();
+                showToast('Voting error: ' + error.message, 'error');
             }
         });
         {% endif %}

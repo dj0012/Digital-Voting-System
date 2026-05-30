@@ -3,205 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Voting Platform</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            color: #2c3e50;
-        }
-        
-        .profile-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #ecf0f1;
-        }
-        
-        .info-row:last-child {
-            border-bottom: none;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        
-        .info-value {
-            color: #7f8c8d;
-        }
-        
-        .update-section {
-            margin: 30px 0;
-        }
-        
-        .update-section h3 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            color: #2c3e50;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ecf0f1;
-            border-radius: 5px;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ecf0f1;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-update {
-            background: #4facfe;
-            color: white;
-        }
-        
-        .btn-update:hover {
-            background: #0078d4;
-            transform: translateY(-2px);
-        }
-        
-        .btn-back {
-            background: #ecf0f1;
-            color: #2c3e50;
-        }
-        
-        .btn-back:hover {
-            background: #bdc3c7;
-        }
-        
-        .message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 5px;
-            display: none;
-        }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-    </style>
+    <title>Profile - Secure Digital Voting Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>👤 Update Profile</h1>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="glass-container" style="max-width: 650px;">
+        <div class="header-section">
+            <div class="icon-wrapper" style="display: inline-flex; align-items: center; justify-content: center;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-indigo); filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.4));">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <h1>Voter Profile</h1>
+            <p>Review and modify your registered voter details</p>
         </div>
         
-        <div class="profile-info">
-            <div class="info-row">
-                <div class="info-label">First Name:</div>
-                <div class="info-value">{{ profile[0] }}</div>
+        <div class="profile-card">
+            <div class="profile-field">
+                <span class="field-label">First Name</span>
+                <span class="field-value">{{ profile[0] }}</span>
             </div>
-            <div class="info-row">
-                <div class="info-label">Middle Name:</div>
-                <div class="info-value">{{ profile[1] }}</div>
+            <div class="profile-field">
+                <span class="field-label">Middle Name</span>
+                <span class="field-value">{{ profile[1] }}</span>
             </div>
-            <div class="info-row">
-                <div class="info-label">Last Name:</div>
-                <div class="info-value">{{ profile[2] }}</div>
+            <div class="profile-field">
+                <span class="field-label">Last Name</span>
+                <span class="field-value">{{ profile[2] }}</span>
             </div>
-            <div class="info-row">
-                <div class="info-label">Phone:</div>
-                <div class="info-value">{{ profile[3] }}</div>
+            <div class="profile-field">
+                <span class="field-label">Registered Phone</span>
+                <span class="field-value">{{ profile[3] }}</span>
             </div>
-            <div class="info-row">
-                <div class="info-label">Email:</div>
-                <div class="info-value">{{ profile[4] }}</div>
+            <div class="profile-field">
+                <span class="field-label">Registered Email</span>
+                <span class="field-value">{{ profile[4] }}</span>
             </div>
-            <div class="info-row">
-                <div class="info-label">Date of Birth:</div>
-                <div class="info-value">{{ profile[5] }}</div>
+            <div class="profile-field">
+                <span class="field-label">Date of Birth</span>
+                <span class="field-value">{{ profile[5] }}</span>
             </div>
         </div>
         
-        <form id="updateForm" class="update-section">
-            <h3>Update Your Information</h3>
+        <form id="updateForm">
+            <h3 style="margin-bottom: 15px; font-size: 18px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;">Modify Information</h3>
             
             <div class="form-group">
-                <label>What to Update:</label>
+                <label for="updateType">Select Field to Update</label>
                 <select id="updateType" required onchange="updatePlaceholder()">
-                    <option value="">Select field to update</option>
+                    <option value="">Choose attribute</option>
                     <option value="name">Name (First Middle Last)</option>
                     <option value="phone">Phone Number</option>
                     <option value="email">Email Address</option>
@@ -209,19 +62,29 @@
             </div>
             
             <div class="form-group">
-                <label>New Value:</label>
+                <label for="updateValue">New Value</label>
                 <input type="text" id="updateValue" placeholder="Enter new value" required>
             </div>
             
-            <div class="message" id="message"></div>
-            
-            <div class="button-group">
-                <button type="submit" class="btn-update">Update</button>
-                <a href="/dashboard" class="btn-back" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">Back</a>
+            <div class="button-row">
+                <button type="submit" class="btn btn-indigo" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Save Changes
+                </button>
+                <a href="/dashboard" class="btn btn-muted" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back
+                </a>
             </div>
         </form>
     </div>
     
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
         function updatePlaceholder() {
             const updateType = document.getElementById('updateType').value;
@@ -229,14 +92,16 @@
             
             switch(updateType) {
                 case 'name':
-                    inputField.placeholder = 'Enter First Middle Last name';
+                    inputField.placeholder = 'Enter First Middle Last (separated by spaces)';
+                    inputField.removeAttribute('maxlength');
                     break;
                 case 'phone':
                     inputField.placeholder = 'Enter 10-digit phone number';
-                    inputField.maxLength = '10';
+                    inputField.maxLength = 10;
                     break;
                 case 'email':
-                    inputField.placeholder = 'Enter email address';
+                    inputField.placeholder = 'Enter new email address';
+                    inputField.removeAttribute('maxlength');
                     break;
                 default:
                     inputField.placeholder = 'Enter new value';
@@ -250,12 +115,11 @@
             const updateValue = document.getElementById('updateValue').value.trim();
             
             if (!updateType || !updateValue) {
-                alert('Please fill all fields');
+                showToast('Please fill all fields', 'error');
                 return;
             }
             
-            const messageDiv = document.getElementById('message');
-            messageDiv.style.display = 'none';
+            showLoader('Updating profile attributes...');
             
             const data = {
                 type: updateType,
@@ -272,20 +136,17 @@
                 });
                 
                 const result = await response.json();
-                messageDiv.style.display = 'block';
+                hideLoader();
                 
                 if (result.success) {
-                    messageDiv.className = 'message success';
-                    messageDiv.textContent = result.message;
-                    setTimeout(() => location.reload(), 1500);
+                    showToast(result.message, 'success');
+                    setTimeout(() => location.reload(), 2000);
                 } else {
-                    messageDiv.className = 'message error';
-                    messageDiv.textContent = result.message;
+                    showToast(result.message || 'Update failed!', 'error');
                 }
             } catch (error) {
-                messageDiv.style.display = 'block';
-                messageDiv.className = 'message error';
-                messageDiv.textContent = 'Update failed: ' + error.message;
+                hideLoader();
+                showToast('Update error: ' + error.message, 'error');
             }
         });
     </script>

@@ -17,5 +17,9 @@ INSERT IGNORE INTO candidate_table(Aadhaar, CandidateName, PartyId, DistrictId) 
 INSERT IGNORE INTO candidate_table(Aadhaar, CandidateName, PartyId, DistrictId) VALUES("616950285641","Rashid Khan",2,235);
 
 -- Insert users
-INSERT IGNORE INTO user_table VALUES("AK1234567","359146283661","password123");
-INSERT IGNORE INTO user_table VALUES("DP1234568","577379407366","password456");
+INSERT IGNORE INTO user_table(VoterId, Aadhaar, _Password) VALUES("AK1234567","359146283661","password123");
+INSERT IGNORE INTO user_table(VoterId, Aadhaar, _Password) VALUES("DP1234568","577379407366","password456");
+
+-- Insert sample inactive voter for lockout testing (IsActive = 0)
+INSERT IGNORE INTO voter_table VALUES("999999999999","DECEASED","VOTER","TEST","M","1970-01-01",56,9000000000,"deceased@example.com",234);
+INSERT IGNORE INTO user_table(VoterId, Aadhaar, _Password, IsActive) VALUES("DE1234567","999999999999","password789",0);
