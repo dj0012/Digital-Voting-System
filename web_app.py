@@ -1,20 +1,35 @@
+import re
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
-import mysql.connector as connector
 from datetime import date, datetime, timedelta
 import random
 import os
+from db_utils import get_db_connection, hash_password, verify_password
 
 app = Flask(__name__)
-app.secret_key = 'secure_voting_platform_secret_key_2024'
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'change-this-secret-key-for-production')
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    SESSION_COOKIE_SECURE=os.environ.get('SESSION_COOKIE_SECURE', 'false').strip().lower() in ('1', 'true', 'yes')
+)
 
-def get_db_connection():
-    return connector.connect(
-        host='127.0.0.1',
-        port=3306,
-        user='root',
-        password='root123',
-        database='voting_system'
-    )
+EMAIL_PATTERN = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+
+
+def calculate_age(dob_obj: date) -> int:
+    today = date.today()
+    age = today.year - dob_obj.year
+    if (today.month, today.day) < (dob_obj.month, dob_obj.day):
+        age -= 1
+    return age
+
+
+@app.after_request
+def set_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'same-origin'
+    return response
 
 @app.route('/')
 def index():
@@ -40,6 +55,7 @@ def signup():
             locality = data.get('locality', '').strip().upper()
             city = data.get('city', '').strip().upper()
             state = data.get('state', '').strip().upper()
+            zip_code = data.get('zip', '').strip()
             password = data.get('password', '')
             confirm_pass = data.get('confirm_pass', '')
             
@@ -47,7 +63,7 @@ def signup():
             if len(aadhaar) != 12 or not aadhaar.isnumeric():
                 return jsonify({'success': False, 'message': 'Aadhaar must be 12 digits'}), 400
             
-            if not (fname.isalpha() and mname.isalpha() and lname.isalpha()):
+            if not fname.isalpha() or not lname.isalpha() or (mname and not mname.isalpha()):
                 return jsonify({'success': False, 'message': 'Names can only contain letters'}), 400
             
             if gender not in ['M', 'F', 'OTHER']:
@@ -56,15 +72,18 @@ def signup():
             if len(phone) != 10 or not phone.isnumeric():
                 return jsonify({'success': False, 'message': 'Phone must be 10 digits'}), 400
             
-            if '@' not in email or '.' not in email:
+            if not EMAIL_PATTERN.match(email):
                 return jsonify({'success': False, 'message': 'Invalid email format'}), 400
+
+            if not zip_code.isdigit() or not (3 <= len(zip_code) <= 10):
+                return jsonify({'success': False, 'message': 'Zip code must be numeric and 3-10 digits'}), 400
             
             if password != confirm_pass:
                 return jsonify({'success': False, 'message': 'Passwords do not match'}), 400
             
             try:
                 dob_obj = datetime.strptime(dob, "%Y-%m-%d")
-                age = date.today().year - dob_obj.year - 1
+                age = calculate_age(dob_obj)
                 if age < 18:
                     return jsonify({'success': False, 'message': 'Must be 18 years old to vote'}), 400
             except ValueError:
@@ -74,33 +93,42 @@ def signup():
             cur = db.cursor()
             
             # Check if already registered
-            cur.execute(f"SELECT Aadhaar FROM voter_table WHERE Aadhaar='{aadhaar}'")
+            cur.execute("SELECT Aadhaar FROM voter_table WHERE Aadhaar = %s", (aadhaar,))
             if cur.fetchone():
+                cur.close()
+                db.close()
                 return jsonify({'success': False, 'message': 'Already registered!'}), 400
             
             # Get district ID
-            cur.execute(f"SELECT DistrictId FROM address WHERE Locality='{locality}' AND City='{city}' AND State='{state}'")
+            cur.execute(
+                "SELECT DistrictId FROM address WHERE Locality = %s AND City = %s AND State = %s AND Zip = %s",
+                (locality, city, state, zip_code)
+            )
             district_result = cur.fetchone()
             if not district_result:
+                cur.close()
+                db.close()
                 return jsonify({'success': False, 'message': 'Invalid address'}), 400
             
             district_id = district_result[0]
             
             # Insert voter
-            query = f"INSERT INTO voter_table VALUES('{aadhaar}','{fname}','{mname}','{lname}','{gender}','{dob}',{age},{phone},'{email}',{district_id})"
-            cur.execute(query)
+            query = "INSERT INTO voter_table(Aadhaar, FirstName, MiddleName, LastName, Sex, Birthday, Age, Phone, Email, DistrictId) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            cur.execute(query, (aadhaar, fname, mname, lname, gender, dob, age, int(phone), email, district_id))
             db.commit()
             
-            # Create voter ID
+            # Create voter ID and insert with hashed password
             vid = fname[:2].upper() + lname[0].upper() + str(random.randint(1000001, 9999999))
-            query = f"INSERT INTO user_table VALUES('{vid}','{aadhaar}','{password}')"
-            cur.execute(query)
+            hashed_pass = hash_password(password)
+            
+            query = "INSERT INTO user_table(VoterId, Aadhaar, _Password, IsActive) VALUES(%s, %s, %s, %s)"
+            cur.execute(query, (vid, aadhaar, hashed_pass, True))
             db.commit()
             
             cur.close()
             db.close()
             
-            return jsonify({'success': True, 'message': f'Registration successful! Your Voter ID: {vid}'}), 200
+            return jsonify({'success': True, 'message': f'Registration successful! Your Voter ID: {vid}', 'voter_id': vid}), 200
         
         except Exception as e:
             return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
@@ -112,25 +140,32 @@ def login():
     if request.method == 'POST':
         try:
             data = request.get_json()
-            voter_id = data.get('voter_id', '').strip()
             aadhaar = data.get('aadhaar', '').strip()
             password = data.get('password', '')
             
             db = get_db_connection()
             cur = db.cursor()
             
-            cur.execute(f"SELECT _Password FROM user_table WHERE VoterId='{voter_id}' AND Aadhaar='{aadhaar}'")
+            cur.execute("SELECT _Password, IsActive FROM user_table WHERE Aadhaar = %s", (aadhaar,))
             result = cur.fetchone()
             
-            if result and result[0] == password:
-                session['user_aadhaar'] = aadhaar
-                cur.close()
-                db.close()
-                return jsonify({'success': True, 'message': 'Login successful!'}), 200
-            else:
-                cur.close()
-                db.close()
-                return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+            if result:
+                stored_password, is_active = result
+                # Support Task 3: IsActive check to prevent deceased/inactive voters from voting
+                if is_active is not None and not is_active:
+                    cur.close()
+                    db.close()
+                    return jsonify({'success': False, 'message': 'Voter record is Inactive (Marked Deceased/Inactive)'}), 403
+                
+                if verify_password(stored_password, password):
+                    session['user_aadhaar'] = aadhaar
+                    cur.close()
+                    db.close()
+                    return jsonify({'success': True, 'message': 'Login successful!'}), 200
+            
+            cur.close()
+            db.close()
+            return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
         
         except Exception as e:
             return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
@@ -152,8 +187,11 @@ def vote():
     if request.method == 'POST':
         try:
             data = request.get_json()
-            party_id = data.get('party_id')
-            candidate_id = data.get('candidate_id')
+            try:
+                party_id = int(data.get('party_id'))
+                candidate_id = int(data.get('candidate_id'))
+            except (TypeError, ValueError):
+                return jsonify({'success': False, 'message': 'Invalid candidate or party selection'}), 400
             
             aadhaar = session['user_aadhaar']
             
@@ -161,19 +199,28 @@ def vote():
             cur = db.cursor()
             
             # Check if already voted
-            cur.execute(f"SELECT VoteId FROM vote_table WHERE Aadhaar='{aadhaar}'")
+            cur.execute("SELECT VoteId FROM vote_table WHERE Aadhaar = %s", (aadhaar,))
             if cur.fetchone():
                 cur.close()
                 db.close()
                 return jsonify({'success': False, 'message': 'Already voted'}), 400
             
             # Get district
-            cur.execute(f"SELECT DistrictId FROM voter_table WHERE Aadhaar='{aadhaar}'")
+            cur.execute("SELECT DistrictId FROM voter_table WHERE Aadhaar = %s", (aadhaar,))
             district = cur.fetchone()[0]
+
+            cur.execute(
+                "SELECT CandidateId FROM candidate_table WHERE CandidateId = %s AND PartyId = %s AND DistrictId = %s",
+                (candidate_id, party_id, district)
+            )
+            candidate_match = cur.fetchone()
+            if not candidate_match:
+                cur.close()
+                db.close()
+                return jsonify({'success': False, 'message': 'Invalid candidate or party for your district'}), 400
             
-            # Insert vote
-            query = f"INSERT INTO vote_table(Aadhaar, PartyId, CandidateId, DistrictId) VALUES('{aadhaar}', {party_id}, {candidate_id}, {district})"
-            cur.execute(query)
+            query = "INSERT INTO vote_table(Aadhaar, PartyId, CandidateId, DistrictId) VALUES(%s, %s, %s, %s)"
+            cur.execute(query, (aadhaar, party_id, candidate_id, district))
             db.commit()
             
             cur.close()
@@ -191,18 +238,18 @@ def vote():
         cur = db.cursor()
         
         # Check if already voted
-        cur.execute(f"SELECT VoteId FROM vote_table WHERE Aadhaar='{aadhaar}'")
+        cur.execute("SELECT VoteId FROM vote_table WHERE Aadhaar = %s", (aadhaar,))
         if cur.fetchone():
             cur.close()
             db.close()
             return render_template('vote.html', already_voted=True, candidates=[])
         
         # Get district
-        cur.execute(f"SELECT DistrictId FROM voter_table WHERE Aadhaar='{aadhaar}'")
+        cur.execute("SELECT DistrictId FROM voter_table WHERE Aadhaar = %s", (aadhaar,))
         district = cur.fetchone()[0]
         
         # Get candidates
-        cur.execute(f"SELECT pt.PartyId, pt.PartyName, ct.CandidateId, ct.CandidateName FROM party_table pt JOIN candidate_table ct ON pt.PartyId = ct.PartyId WHERE ct.DistrictId={district}")
+        cur.execute("SELECT pt.PartyId, pt.PartyName, ct.CandidateId, ct.CandidateName FROM party_table pt JOIN candidate_table ct ON pt.PartyId = ct.PartyId WHERE ct.DistrictId = %s", (district,))
         candidates = cur.fetchall()
         
         cur.close()
@@ -219,7 +266,11 @@ def results():
         db = get_db_connection()
         cur = db.cursor()
         
-        cur.execute("SELECT pt.PartyId, pt.PartyName, COALESCE(SUM(r.Vote_Count), 0) as Total FROM party_table pt LEFT JOIN result r ON pt.PartyId = r.PartyId GROUP BY pt.PartyId, pt.PartyName ORDER BY Total DESC")
+        cur.execute(
+            "SELECT pt.PartyId, pt.PartyName, COALESCE(COUNT(v.VoteId), 0) AS Total "
+            "FROM party_table pt LEFT JOIN vote_table v ON pt.PartyId = v.PartyId "
+            "GROUP BY pt.PartyId, pt.PartyName ORDER BY Total DESC"
+        )
         results = cur.fetchall()
         
         cur.close()
@@ -247,21 +298,38 @@ def profile():
             
             if update_type == 'name':
                 parts = value.split()
-                if len(parts) < 3:
-                    return jsonify({'success': False, 'message': 'Enter First Middle Last name'}), 400
-                query = f"UPDATE voter_table SET FirstName='{parts[0].upper()}', MiddleName='{parts[1].upper()}', LastName='{parts[2].upper()}' WHERE Aadhaar='{aadhaar}'"
+                if len(parts) < 2:
+                    cur.close()
+                    db.close()
+                    return jsonify({'success': False, 'message': 'Please enter at least First and Last name'}), 400
+                if len(parts) == 2:
+                    first, middle, last = parts[0], "", parts[1]
+                else:
+                    first, middle, last = parts[0], parts[1], " ".join(parts[2:])
+                query = "UPDATE voter_table SET FirstName = %s, MiddleName = %s, LastName = %s WHERE Aadhaar = %s"
+                params = (first.upper(), middle.upper(), last.upper(), aadhaar)
             
             elif update_type == 'phone':
                 if len(value) != 10 or not value.isnumeric():
+                    cur.close()
+                    db.close()
                     return jsonify({'success': False, 'message': 'Phone must be 10 digits'}), 400
-                query = f"UPDATE voter_table SET Phone={value} WHERE Aadhaar='{aadhaar}'"
+                query = "UPDATE voter_table SET Phone = %s WHERE Aadhaar = %s"
+                params = (int(value), aadhaar)
             
             elif update_type == 'email':
-                if '@' not in value or '.' not in value:
+                if not EMAIL_PATTERN.match(value.lower()):
+                    cur.close()
+                    db.close()
                     return jsonify({'success': False, 'message': 'Invalid email format'}), 400
-                query = f"UPDATE voter_table SET Email='{value.lower()}' WHERE Aadhaar='{aadhaar}'"
+                query = "UPDATE voter_table SET Email = %s WHERE Aadhaar = %s"
+                params = (value.lower(), aadhaar)
+            else:
+                cur.close()
+                db.close()
+                return jsonify({'success': False, 'message': 'Invalid update type'}), 400
             
-            cur.execute(query)
+            cur.execute(query, params)
             db.commit()
             cur.close()
             db.close()
@@ -276,7 +344,7 @@ def profile():
         db = get_db_connection()
         cur = db.cursor()
         
-        cur.execute(f"SELECT FirstName, MiddleName, LastName, Phone, Email, Birthday FROM voter_table WHERE Aadhaar='{aadhaar}'")
+        cur.execute("SELECT FirstName, MiddleName, LastName, Phone, Email, Birthday FROM voter_table WHERE Aadhaar = %s", (aadhaar,))
         profile_data = cur.fetchone()
         
         cur.close()
@@ -305,10 +373,10 @@ def get_candidates():
         db = get_db_connection()
         cur = db.cursor()
         
-        cur.execute(f"SELECT DistrictId FROM voter_table WHERE Aadhaar='{aadhaar}'")
+        cur.execute("SELECT DistrictId FROM voter_table WHERE Aadhaar = %s", (aadhaar,))
         district = cur.fetchone()[0]
         
-        cur.execute(f"SELECT pt.PartyId, pt.PartyName, ct.CandidateId, ct.CandidateName FROM party_table pt JOIN candidate_table ct ON pt.PartyId = ct.PartyId WHERE ct.DistrictId={district}")
+        cur.execute("SELECT pt.PartyId, pt.PartyName, ct.CandidateId, ct.CandidateName FROM party_table pt JOIN candidate_table ct ON pt.PartyId = ct.PartyId WHERE ct.DistrictId = %s", (district,))
         candidates = cur.fetchall()
         
         cur.close()
@@ -330,4 +398,4 @@ def get_candidates():
         return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=8080)
+    app.run(debug=True, host='0.0.0.0', port=8080)
